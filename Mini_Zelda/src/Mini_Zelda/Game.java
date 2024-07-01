@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -15,11 +17,14 @@ import javax.swing.JFrame;
 public class Game extends Canvas implements Runnable, KeyListener{
 
 	/*Definindo as variaveis com a resolução do game*/
-	public int WIDTH = 480;
-	public int HEIGHT = 480;
+	public static int WIDTH = 640;
+	public static int HEIGHT = 480;
+	public static int SCALE = 3;
 	
-	public Player player;
+	public static Player player;
 	public World world;
+	
+	public List<Enemy> enemys = new ArrayList<Enemy>();
 	
 	public Game() {
 		this.addKeyListener(this);
@@ -27,12 +32,20 @@ public class Game extends Canvas implements Runnable, KeyListener{
 		/*Setando a resolução do game*/
 		this.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
+		/*instanciando a minha classe spritesheet*/
+		new Spritesheet();
 		player = new Player(32, 32);
+		enemys.add(new Enemy(32, 32));
+		
 		world = new World();
 	}
 	
 	public void tick() {
 		player.tick();
+		
+		for(int i = 0; i < enemys.size(); i++) {
+			enemys.get(i).tick();
+		}
 	}
 	
 	public void render() {
@@ -41,19 +54,22 @@ public class Game extends Canvas implements Runnable, KeyListener{
 		/*Estou verificando se posso renderizar o Jogo*/
 		if(bs == null) {
 			/*Metodo responsavel por otimizar o jogo. O numero 3 que esta sendo
-			  passando como parametro é responsavel pela otimização grafica do jogo*/
+			  passado como parametro é responsavel pela otimização grafica do jogo*/
 			this.createBufferStrategy(3);
 			return;
 		}
 		
 		Graphics g = bs.getDrawGraphics();
 		
-		g.setColor(Color.black);	
+		g.setColor(new Color(0, 135, 3));	
 		/*Metodo responsavel por setar a cor preta em toda a área da 
 		 janela do Jogo*/
-		g.fillRect(0, 0, WIDTH, HEIGHT);
+		g.fillRect(0, 0, WIDTH*SCALE, HEIGHT*SCALE);
 		
 		player.render(g);
+		for(int i = 0; i < enemys.size(); i++) {
+			enemys.get(i).render(g);
+		}
 		world.render(g);
 		
 		/*Metodo responsavel por mostrar o conteudo na Janela do Jogo*/
@@ -119,7 +135,11 @@ public class Game extends Canvas implements Runnable, KeyListener{
 		} 
 		else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
 			player.down = true;
-		}	
+		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_E) {
+			player.shoot = true;
+		}
 	}
 
 	@Override
